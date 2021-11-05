@@ -33,4 +33,4 @@ jobs:
           push: true
           tags: jfreeman81/album-club-bot:latest
           secrets: |
-            DISCORD_TOKEN= ${{ secrets.DISCORD_TOKEN }}
+            "DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}""
