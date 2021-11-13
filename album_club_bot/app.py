@@ -142,7 +142,7 @@ async def theme_current(ctx):
     else:
         await ctx.send("A theme has not been chosen. Use the <theme pick> command.")
 
-@theme.command(name='pick')
+@theme.command(name='pick', aliases=['select'])
 async def theme_pick(ctx, *, args):
     theme = args.strip()
     if theme_exists(theme):
@@ -297,7 +297,7 @@ async def nomination_remove(ctx, *, args):
     else:
         await ctx.send("Invalid nomination, use: ac!nomination remove <album> - <artist>")
 
-@nomination.command(name='select')
+@nomination.command(name='select', aliases=['pick'])
 async def nomination_select(ctx):
     this_themes_choices = get_nominations_for_this_theme()
     already_selected_users = [album['user'] for album in this_themes_choices if album['selected']]
