@@ -1,3 +1,4 @@
 apscheduler
 discord.py
+DiscordUtils
 tinydb
