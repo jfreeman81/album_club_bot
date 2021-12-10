@@ -2,6 +2,7 @@ import discord
 import os
 from discord.ext import commands
 import random
+import DiscordUtils
 from tinydb import TinyDB, Query
 from datetime import datetime, timedelta
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -31,7 +32,7 @@ def get_user_mention(ctx):
 async def ping_channel():
     channel = bot.get_channel(552239880042971139)
     await channel.send(f"<@&808513468339716137> time to discuss this weeks album {get_current_nomination()}")
-    sched.add_job(ping_channel, 'date', run_date=(get_next_sunday_datetime().replace(hour=19, minute=30, second=0)))
+    # sched.add_job(ping_channel, 'date', run_date=(get_next_sunday_datetime().replace(hour=19, minute=30, second=0)))
 
 def get_last_sunday_datetime(from_date = datetime.now()):
     idx = (from_date.weekday() + 1) % 7
@@ -242,60 +243,32 @@ async def nomination_current(ctx):
     else:
         await ctx.send("An album has not been chosen. Use the <nomination select> command.")
 
-bot.list_limit = 10
-bot.last_nomination_count = 0
-bot.nomination_list = []
-
 @nomination.group(name='history')
 async def nomination_history(ctx):
-
-    if ctx.invoke_subcommand is not None:
-        return
-
-    out = ""
-    bot.last_nomination_count = 0
-    bot.nomination_list = nom_table.all()
-
-    limited_noms = bot.nomination_list[:bot.list_limit]
-
-    for nom in limited_noms:
-        bot.last_nomination_count += 1
-        out += f"{bot.last_nomination_count}. {nom['album']} - {nom['artist']}\n"
-
-    if bot.last_nomination_count > 0:
-        await ctx.send(out)
-    else:
-        await ctx.send("There aren't any nominations")
-
-@nomination_history.command(name='next')
-async def nomination_history_next(ctx):
-
-    out = ""
-    next_list = bot.nomination_list[bot.last_nomination_count:bot.list_limit]
-
-    if len(next_list) == 0:
-        await ctx.send("You've reached the end of the list. Use the <nomination history> command to start over.")
-    else:
-        for nom in next_list:
-            bot.last_nomination_count += 1
-            out += f"{bot.last_nomination_count}. {nom['album']} - {nom['artist']}\n"
-        await ctx.send(out)
-
-
-@nomination.command(name='remove')
-async def nomination_remove(ctx, *, args):
-    nom = args.strip()
-    if '-' in nom:
-        album, artist = nom.split('-')
-        album = album.strip()
-        artist = artist.strip()
-        if (nomination_by_user(album, artist, get_user_mention(ctx))):
-            remove_nomination(album, artist, get_user_mention(ctx))
-            await ctx.send(f"{album} by {artist} removed.")
-        else:
-            await ctx.send(f"You have not nominated {album} by {artist}")
-    else:
-        await ctx.send("Invalid nomination, use: ac!nomination remove <album> - <artist>")
+    embeds = []
+    nom_count = 0
+    nom_per_embed = 10
+    album_list_str = ""
+    artist_list_str = ""
+    for nom in nom_table.all():
+        album_list_str += f"{nom['album']}\n'"
+        artist_list_str += f"{nom['artist']}\n"
+        nom_count += 1
+        if nom_count % nom_per_embed == 0:
+            new_embed = discord.Embed()
+            new_embed.add_field(name="Album", value=album_list_str, inline=True)
+            new_embed.add_field(name="Artist", value=artist_list_str, inline=True)
+            embeds.append(new_embed)
+            nom_count = 0
+            album_list_str = ""
+            artist_list_str = ""
+    if nom_count > 0:
+        new_embed = discord.Embed()
+        new_embed.add_field(name="Album", value=album_list_str, inline=True)
+        new_embed.add_field(name="Artist", value=artist_list_str, inline=True)
+        embeds.append(new_embed)
+    paginator = DiscordUtils.Pagination.AutoEmbedPaginator(ctx)
+    await paginator.run(embeds)
 
 @nomination.command(name='select', aliases=['pick'])
 async def nomination_select(ctx):
@@ -319,7 +292,7 @@ async def on_ready():
     print('------')
 
 def main(args=None):
-    sched.add_job(ping_channel, 'date', run_date=(get_next_sunday_datetime().replace(hour=19, minute=30, second=0)))
+    # sched.add_job(ping_channel, 'date', run_date=(get_next_sunday_datetime().replace(hour=19, minute=30, second=0)))
     bot.run(os.getenv('DISCORD_TOKEN'))
 
 if __name__ == "__main__":
