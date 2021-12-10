@@ -251,21 +251,21 @@ async def nomination_history(ctx):
     album_list_str = ""
     artist_list_str = ""
     for nom in nom_table.all():
-        album_list_str += f"{nom['album']}\n'"
+        album_list_str += f"{nom['album']}\n"
         artist_list_str += f"{nom['artist']}\n"
         nom_count += 1
         if nom_count % nom_per_embed == 0:
             new_embed = discord.Embed()
-            new_embed.add_field(name="Album", value=album_list_str, inline=True)
-            new_embed.add_field(name="Artist", value=artist_list_str, inline=True)
+            new_embed.add_field(name="Album", value=album_list_str[:-1], inline=True)
+            new_embed.add_field(name="Artist", value=artist_list_str[:-1], inline=True)
             embeds.append(new_embed)
             nom_count = 0
             album_list_str = ""
             artist_list_str = ""
     if nom_count > 0:
         new_embed = discord.Embed()
-        new_embed.add_field(name="Album", value=album_list_str, inline=True)
-        new_embed.add_field(name="Artist", value=artist_list_str, inline=True)
+        new_embed.add_field(name="Album", value=album_list_str[:-1], inline=True)
+        new_embed.add_field(name="Artist", value=artist_list_str[:-1], inline=True)
         embeds.append(new_embed)
     paginator = DiscordUtils.Pagination.AutoEmbedPaginator(ctx)
     await paginator.run(embeds)
