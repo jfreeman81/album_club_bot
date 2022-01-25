@@ -66,12 +66,13 @@ async def on_message(message):
         pepe_url = 'https://rare-pepe.com'
         response = requests.get(pepe_url)
         if response:
-            soup = BeautifulSoup(response.text)
+            soup = BeautifulSoup(response.text, 'html.parser')
             attrs = { 'src': re.compile(r'https://rare-pepe.com/wp-content/uploads/.*png') }
             rare_pepe_src = random.choice(soup.find_all('img', attrs=attrs)).attrs['src']
             await message.channel.send(rare_pepe_src)
         else:
             await message.channel.send('no pepe for u')
+    await bot.process_commands(message)
 
 @bot.command()
 async def sunday(ctx):
