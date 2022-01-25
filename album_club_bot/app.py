@@ -1,5 +1,8 @@
 import discord
 import os
+import re
+import requests
+from bs4 import BeautifulSoup
 from discord.ext import commands
 import random
 import DiscordUtils
@@ -56,6 +59,19 @@ def get_last_sunday(from_date = datetime.now()):
 def get_next_sunday_datetime(from_date = datetime.now()):
     idx = (from_date.weekday() + 1) % 7
     return from_date + timedelta(7 - idx)
+
+@bot.event
+async def on_message(message):
+    if bot.user.mention in message.content.split():
+        pepe_url = 'https://rare-pepe.com'
+        response = requests.get(pepe_url)
+        if response:
+            soup = BeautifulSoup(response.text)
+            attrs = { 'src': re.compile(r'https://rare-pepe.com/wp-content/uploads/.*png') }
+            rare_pepe_src = random.choice(soup.find_all('img', attrs=attrs)).attrs['src']
+            await message.channel.send(rare_pepe_src)
+        else:
+            await message.channel.send('no pepe for u')
 
 @bot.command()
 async def sunday(ctx):

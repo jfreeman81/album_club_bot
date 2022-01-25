@@ -1,4 +1,6 @@
 apscheduler
+beautifulsoup4
 discord.py
 DiscordUtils
+requests
 tinydb
