@@ -62,7 +62,8 @@ def get_next_sunday_datetime(from_date = datetime.now()):
 
 @bot.event
 async def on_message(message):
-    if bot.user.mention in message.content.split():
+    enable_pepe_replies = False
+    if enable_pepe_replies and bot.user.mention in message.content.split():
         pepe_url = 'https://rare-pepe.com'
         response = requests.get(pepe_url)
         if response:
