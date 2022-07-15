@@ -179,7 +179,10 @@ def add_nomination(album: str, artist: str, user: str):
 
 def remove_nomination(album: str, artist: str, user: str):
     remove = Query()
-    nom_table.remove((remove.album == album) & (remove.artist == artist) & (remove.user == user))
+    nom_table.remove((remove.album == album) & 
+                     (remove.artist == artist) & 
+                     (remove.user == user) &
+                     (remove.theme == get_current_theme))
 
 def get_nominations_for_this_week():
     album = Query()
@@ -205,6 +208,14 @@ def user_already_has_two(user: str):
     nom = Query()
     user_noms = nom_table.search((nom.user == user) & (nom.theme == get_current_theme()))
     return user_noms is not None and len(user_noms) == 2
+
+def user_has_nomination(album: str, artist: str, user: str):
+    nom = Query()
+    user_noms = nom_table.search((nom.user == user) & 
+                                 (nom.theme == get_current_theme()) &
+                                 (nom.album == album) &
+                                 (nom.artist == artist))
+    return user_noms is not None and len(user_noms) >= 1
 
 def set_current_nomination(new_nom):
     nom = Query()
@@ -236,6 +247,22 @@ async def nomination_add(ctx, *, args):
             await ctx.send(f"{album} by {artist} added")
     else:
         await ctx.send('Invalid nomination, use: ac!nomination add <album> - <artist>')
+
+@nomination.command(name='remove', aliases=['delete'])
+async def nomination_delete(ctx, *, args):
+    nom = args.strip()
+    if '-' in nom:
+        album, artist = nom.split('-')
+        album = album.strip()
+        artist = artist.strip()
+        user = get_user_mention(ctx)
+        if user_has_nomination(album, artist, user):
+            remove_nomination(album, artist, user)
+            await ctx.send(f'{album} by {artist} removed')
+        else:
+            await ctx.send(f'Cannot not remove {album}. You did not nominate it.')
+    else:
+        await ctx.send('Invalid nomination, use: ac!nomination remove <album> - <artist>')
 
 @nomination.command(name='get')
 async def nomination_get(ctx):
